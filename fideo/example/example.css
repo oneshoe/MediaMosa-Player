@@ -1,0 +1,50 @@
+/* Reset */
+html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,samp,small,strike,strong,sub,sup,tt,var,center,dl,dt,dd,ol,ul,li,fieldset,form,input,select,textarea,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{
+  background: none repeat scroll 0 0 transparent; border: 0 none; font-size: 100%; line-height: inherit; margin: 0; outline: 0 none; padding: 0; vertical-align: baseline;
+}
+input, select, textarea, body {
+  font: 13px/20px "Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+body {
+  background: #000 url("assets/background.png") no-repeat center 0;
+  color:#f7f7f7;
+}
+
+/* Structure */
+#page {
+  margin: 0 auto;
+  padding-top: 10px;
+  width: 815px;
+}
+#footer img {
+  bottom: 20px;
+  position: fixed;
+  right: 20px;
+}
+
+/* Styling */
+.page-title {
+  border-bottom: 1px solid #5DCBF5;
+  color: #FFFFFF;
+  font-family: 'Lucida Grande',Helvetica,Arial,sans-serif;
+  font-size: 18px;
+  font-weight: normal;
+  margin-bottom: 35px;
+  padding-bottom: 10px;
+}
+h2 {
+  font-size: 15px;
+  margin-bottom: 5px;
+}
+#content {
+  clear:both;
+  float:left;
+}
+#explanation {
+  clear:both;
+  float:left;
+  margin-top:30px;
+  margin-bottom:30px;
+  padding-left:20px;
+  padding-right:20px;
+}

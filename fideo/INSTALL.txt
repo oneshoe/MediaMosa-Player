@@ -1,0 +1,31 @@
+In order to install the Drupal module, and start using the HTML5 player with
+Flash fallback player, follow the next steps carefully. If you just want to
+see an example, check out example.html in the 'example' directory.
+
+1. Place the entire module folder inside a Drupal 6 installation. Usually the
+   Drupal module should be placed in:
+   sites/all/modules/fideo
+
+2. Fideo uses Flowplayer as fallback player in case the visitor's browser
+   doesn't support HTML5 video. Because Flowplayer is licensed under GPLv3 it
+   cannot be shipped with Flowplayer. You should download the following files:
+
+   FlowPlayer 3.2.5 (it's tested with 3.2.5 but you can try newer if you like)
+   http://releases.flowplayer.org/flowplayer/flowplayer-3.2.5.zip
+
+   For captions support you'll need:
+   http://releases.flowplayer.org/flowplayer.captions/flowplayer.captions-3.2.2.swf
+   http://releases.flowplayer.org/flowplayer.content/flowplayer.content-3.2.0.swf
+   http://releases.flowplayer.org/flowplayer.controls/flowplayer.controls-3.2.3.swf
+
+3. Unpack the FlowPlayer zip you've downloaded into the /assets/flowplayer/
+   directory inside the fideo module directory. The main FlowPlayer swf should
+   be accessible through: fideo/assets/flowplayer/flowplayer-3.2.5.swf.
+
+4. Install the Drupal module "Fideo" by going to admin/build/modules.
+
+5. Check out the demo page by going to the path 'fideo'.
+
+6. In the fideo.module is a function called fideo_format() which presents the
+   data structure for video files. You can change the file URL's to point to
+   your own video's.

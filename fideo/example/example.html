@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html class="js">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>MediaMosa player 1.0-beta</title>
+<!--
+  =============================================================================
+  MediaMosa Multisource Player
+
+  HTML5 based video player with support for subtitling, multiple video screens,
+  stills, annotations and timed messages with support for HTML content.
+
+  Based on VideoJS (www.videojs.com).
+
+  Developed by One Shoe - open source web development
+  www.oneshoe.nl
+
+  =============================================================================
+-->
+
+<!-- CSS for example purposes only -->
+<link type="text/css" rel="stylesheet" media="all" href="example.css" />
+
+<!-- CSS needed for the player -->
+<link type="text/css" rel="stylesheet" media="screen" href="../assets/video-js.css?h" />
+<link type="text/css" rel="stylesheet" media="screen" href="../assets/video.css?h" />
+
+<!-- Javascript files for the player -->
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+<script type="text/javascript" src="../assets/video.js?h"></script>
+<script type="text/javascript" src="../assets/fideo.js?h"></script>
+<script type="text/javascript" src="../assets/qtip/jquery.qtip-1.0.0-rc3.min.js?h"></script>
+
+<!-- Configuration -->
+<script type="text/javascript">
+<!--//--><![CDATA[//><!--
+jQuery.extend(Drupal.settings, { "basePath": "./", "fideo": { "fideo-primary": { "type": "video" }, "fideo_video_2": { "type": "video", "multi": "fideo-primary" }, "fideo_slides_1": { "type": "slides", "target": "fideo-primary", "timecodes": [ 2.031, 4.661, 8.75, 10.874, 12.945, 30.112, 73.847, 204.292, 483.464, 486.061, 487.62, 490.251, 492.863, 495.463, 498.076, 499.141, 500.688, 504.856, 508.48, 509.54, 512.214, 514.823, 515.875, 630.102, 639.983, 692.459 ] }, "fideo_markers": { "type": "markers", "target": "fideo-primary" } } });
+//--><!]]>
+</script>
+
+</head>
+<body>
+  <div id="page">
+      <div id="main">
+      <h1 class="page-title">MediaMosa player 1.0-beta</h1>
+      <div id="content">
+
+        <div id="fideo">
+          <div class="fideo-wrapper">
+
+            <div class="fideo-item" id="fideo-cfideo-primary">
+              <div class="video-js-box">
+                <video id="fideo-primary" width="534" height="400" controls="controls" class="video-js" preload="false" poster="http://labs.oneshoe.nl/fideo/assets/video/mozcamp_still.jpg">
+                  <source src="http://labs.oneshoe.nl/fideo/assets/video/mozcamp.handbrake.mp4?1" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"' />
+                  <source src="http://labs.oneshoe.nl/fideo/assets/video/mozcamp.ffmpeg.webm?1" type='video/webm; codecs="vp8, vorbis"' />
+                  <source src="http://labs.oneshoe.nl/fideo/assets/video/mozcamp.ffmpeg.ogv?1" type='video/ogg; codecs="theora, vorbis"' />
+                  <track kind="subtitles" src="http://labs.oneshoe.nl/fideo/assets/video/mozcamp.captions.srt" srclang="nl" label="Nederlands" type="text/plain" />
+                  <object id="fideo-primary-flash" class="vjs-flash-fallback" width="534" height="400" type="application/x-shockwave-flash" data="/mediamosaplayer/sites/all/modules/oneshoe/fideo/assets/flowplayer/flowplayer-3.2.5.swf">
+                    <param name="movie" value="/mediamosaplayer/sites/all/modules/oneshoe/fideo/assets/flowplayer/flowplayer-3.2.5.swf" /><param name="allowfullscreen" value="true" /><param name="flashvars" value='config={ "playlist": [ "http://labs.oneshoe.nl/fideo/assets/video/mozcamp_still.jpg", { "url": "http://labs.oneshoe.nl/fideo/assets/video/mozcamp.handbrake.mp4?1", "autoBuffering": true, "autoPlay": false, "captionUrl": "http://labs.oneshoe.nl/fideo/assets/video/mozcamp.captions.srt" } ], "plugins": { "captions": { "url": "flowplayer.captions-3.2.2.swf", "captionTarget": "content" }, "content": { "url": "flowplayer.content-3.2.0.swf", "bottom": 5, "height": 40, "backgroundColor": "transparent", "backgroundGradient": "none", "border": 0, "textDecoration": "outline", "style": { "body": { "fontSize": 18, "fontFamily": "Helvetica,Arial,sans-serif", "textAlign": "center", "color": "#ffffff" } } } } }' />
+                    <img src="http://labs.oneshoe.nl/fideo/assets/video/mozcamp_still.jpg" width="534" height="400" alt="Unable to play video." />
+                  </object>
+                </video>
+              </div>
+            </div>
+
+            <div class="fideo-item" id="fideo-cfideo_video_2">
+              <div class="video-js-box">
+                <video id="fideo_video_2" disabled="disabled" width="267" height="200" controls="controls" preload="false" class="video-js" poster="http://labs.oneshoe.nl/fideo/assets/video/mozcamp_slide.jpg">
+                  <source src="http://labs.oneshoe.nl/fideo/assets/video/mozcamp.handbrake.mp4?2" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"' />
+                  <source src="http://labs.oneshoe.nl/fideo/assets/video/mozcamp.ffmpeg.webm?2" type='video/webm; codecs="vp8, vorbis"' />
+                  <source src="http://labs.oneshoe.nl/fideo/assets/video/mozcamp.ffmpeg.ogv?2" type='video/ogg; codecs="theora, vorbis"' />
+                  <object id="fideo_video_2-flash" class="vjs-flash-fallback" width="267" height="200" type="application/x-shockwave-flash" data="/mediamosaplayer/sites/all/modules/oneshoe/fideo/assets/flowplayer/flowplayer-3.2.5.swf">
+                    <param name="movie" value="/mediamosaplayer/sites/all/modules/oneshoe/fideo/assets/flowplayer/flowplayer-3.2.5.swf" /><param name="allowfullscreen" value="true" /><param name="flashvars" value='config={ "playlist": [ "http://labs.oneshoe.nl/fideo/assets/video/mozcamp_slide.jpg", { "url": "http://labs.oneshoe.nl/fideo/assets/video/mozcamp.handbrake.mp4?2", "autoBuffering": true, "autoPlay": false } ] }' />
+                    <img src="http://labs.oneshoe.nl/fideo/assets/video/mozcamp_slide.jpg" width="267" height="200" alt="Unable to play video." />
+                  </object>
+                </video>
+              </div>
+            </div>
+
+            <div id="fideo_slides_1" class="fideo-slides">
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/000.jpg" alt="MozCamp.odp - OpenOffice.org Impress" title="MozCamp.odp - OpenOffice.org Impress" /></div><div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/001.jpg" alt="MozCamp.odp - OpenOffice.org Impress" title="MozCamp.odp - OpenOffice.org Impress" /></div><div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/002.jpg" alt="MozCamp.odp - OpenOffice.org Impress
+mozilla europe
+&quot;The Dutch Mozilla Community Exposed&quot;
+Wim Benes" title="MozCamp.odp - OpenOffice.org Impress
+mozilla europe
+&quot;The Dutch Mozilla Community Exposed&quot;
+Wim Benes" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/003.jpg" alt="mozilla europe
+&quot;The Dutch Mozilla Community Exposed&quot;
+Wim Benes" title="mozilla europe
+&quot;The Dutch Mozilla Community Exposed&quot;
+Wim Benes" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/004.jpg" alt="mozilla europe
+&quot;The Dutch Mozilla Community Exposed&quot;
+Wim Benes" title="mozilla europe
+&quot;The Dutch Mozilla Community Exposed&quot;
+Wim Benes" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/005.jpg" alt="mozilla europe
+&quot;The Dutch Mozilla Community Exposed&quot;
+Wim Benes" title="mozilla europe
+&quot;The Dutch Mozilla Community Exposed&quot;
+Wim Benes" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/006.jpg" alt="mozilla europe
+Fryslan
+Nederland
+Europe
+Planet" title="mozilla europe
+Fryslan
+Nederland
+Europe
+Planet" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/007.jpg" alt="mozilla europe
+NETSCAPE.
+NAVIGATOR" title="mozilla europe
+NETSCAPE.
+NAVIGATOR" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/008.jpg" alt="MozCamp.odp - OpenOffice.org Impress
+mozilla europe" title="MozCamp.odp - OpenOffice.org Impress
+mozilla europe" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/009.jpg" alt="Live-Uitzending Auditorium SURFnet - Mozilla Firefox
+Live
+Uitzending Auditorium SURFnet" title="Live-Uitzending Auditorium SURFnet - Mozilla Firefox
+Live
+Uitzending Auditorium SURFnet" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/010.jpg" alt="" title="" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/011.jpg" alt="" title="" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/012.jpg" alt="" title="" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/013.jpg" alt="" title="" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/014.jpg" alt="" title="" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/015.jpg" alt="" title="" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/016.jpg" alt="" title="" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/017.jpg" alt="" title="" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/018.jpg" alt="" title="" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/019.jpg" alt="" title="" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/020.jpg" alt="" title="" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/021.jpg" alt="" title="" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/022.jpg" alt="mozilla europe
+NETSCAPE.
+NAVIGATOR" title="mozilla europe
+NETSCAPE.
+NAVIGATOR" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/023.jpg" alt="mozilla
+Krij Firefox 3 yn it Frysk" title="mozilla
+Krij Firefox 3 yn it Frysk" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/024.jpg" alt="mozilla messaging
+Download Thunderbird 3 Beta 2" title="mozilla messaging
+Download Thunderbird 3 Beta 2" /></div>
+              <div class="fideo-slide"><img src="http://labs.oneshoe.nl/fideo/assets/stills/025.jpg" alt="mozilla europe
+www.mozilla-nl.org
+www.mozbrowser.nl
+www.mozilla-europe.org" title="mozilla europe
+www.mozilla-nl.org
+www.mozbrowser.nl
+www.mozilla-europe.org" /></div>
+            </div>
+
+            <div  id="fideo_markers">
+              <a href="/mediamosaplayer/#start:3.3:end:6.4" class="timecode-marker">Introduction</a>
+              <a href="/mediamosaplayer/#start:110.3:end:156.4" class="timecode-marker">Mozilla Firefox Frysian translation team</a>
+              <a href="/mediamosaplayer/#start:1110.3:end:1100.4" class="timecode-marker">Time for questions</a>
+              <a href="/mediamosaplayer/#start:400.3:end:410.4" class="timecode-marker">History: from Netscape, to Mozilla, to Firefox</a>
+              <a href="/mediamosaplayer/#start:600.3:end:650.4" class="timecode-marker"><img src="http://labs.oneshoe.nl/fideo/assets/stills/firefox_logo.png" width="100" height="100" alt="FireFox" /><br />The FireFox browser.</a>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div id="explanation">
+
+          <h2>Open Source MediaMosa HTML5 player</h2>
+          <div class="content">
+            <ul style="float:left;width:49%;">
+              <li><strong>Multiple video sources</strong><br />For example a secondary camera showing the crowd.</li>
+              <li><strong>Presentation slides</strong><br />Slides from a screen capture or presentation</li>
+              <li><strong>Timed HTML</strong><br />Display registration forms or questionnaires on specific frames.</li>
+            </ul>
+
+            <ul style="float:right;width:49%">
+              <li><strong>Tooltips/markers</strong><br />Provide access points, or display mentions of a search keywords on the timeline.</li>
+              <li><strong>Subtitling / captioning</strong><br />Place timed text like subtitles or captions in SRT format.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"><div class='limiter clear-block'>
+    <a href="http://oneshoe.nl"><img src="assets/oneshoe.png" alt="One Shoe" title="One Shoe - open source web development" width="150" /></a>
+  </div>
+
+</body>
+</html>
