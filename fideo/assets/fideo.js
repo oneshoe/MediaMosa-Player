@@ -1,4 +1,4 @@
-// $Id: fideo.js 109 2011-06-07 14:39:55Z thijs $
+// $Id: fideo.js 119 2011-06-08 07:43:01Z thijs $
 var Drupal = Drupal || { 'settings': {}, 'behaviors': {}, 'themes': {}, 'locale': {} };
 Drupal.settings.fideo = {};
 Drupal.fideoCache = {};
@@ -264,10 +264,8 @@ Drupal.fideo.prototype.selectSlideIndex = function(timecode) {
   return idx;
 }
 
-Drupal.fideo.prototype.setupFullscreenMode = function (show) {
-  // Elements
-
-  windowDimensions = {
+Drupal.fideo.prototype.setupFullscreenMode = function(show) {
+  var windowDimensions = {
     'width' :  $(window).width(),
     'height' : $(window).height()
   };
@@ -283,12 +281,12 @@ Drupal.fideo.prototype.setupFullscreenMode = function (show) {
 
     var primaryDimensions = {
       'width' : $('#fideo-primary').width() / scaleRatio,
-      'height' : $('#fideo-primary').height() / scaleRatio,
+      'height' : $('#fideo-primary').height() / scaleRatio
     };
 
     var secondaryDimensions = {
       'width' : $('#fideo_video_2').width() / scaleRatio,
-      'height' : $('#fideo_video_2').height() / scaleRatio,
+      'height' : $('#fideo_video_2').height() / scaleRatio
     };
 
     $('#fideo').addClass('fullscreen').css({'width' : windowDimensions.width});
@@ -333,15 +331,15 @@ Drupal.fideo.prototype.setupFullscreenMode = function (show) {
   // }
 }
 
-Drupal.fideo.prototype.enlargePlayer = function () {
+Drupal.fideo.prototype.enlargePlayer = function() {
   var c = this;
 
-  $(this.player.video).toggle(function () {
+  $(this.player.video).toggle(function() {
     $(this.player.video).css({'z-index' : '100'});
     $(this.player.video).animate({'height' : '400', 'width' : '534', 'bottom' : '200'}, 300);
-  }, function () {
+  }, function() {
     $(this.player.video).animate({'height' : '200', 'width' : '267', 'bottom' : '0'}, 300);
-    // Wait al little, till the animation is finished
+    // Wait al little, till the animation is finished.
     setTimeout(function () {
       $(c.player.video).css({'z-index' : '0'});
     }, 300);
