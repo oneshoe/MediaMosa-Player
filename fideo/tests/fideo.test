@@ -1,0 +1,89 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Simple test for the fideo module.
+ *
+ * @author One Shoe
+ */
+
+/**
+ * Test case that will test the get_timecode function from the fideo module.
+ */
+class SimpletestUnitTestFideoTestCase extends DrupalUnitTestCase {
+
+  /**
+   * Implements the static getInfo method.
+   *
+   * @return array
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Timecode Test case',
+      'description' => 'Test the timecode function from the fideo module on input formats.',
+      'group' => 'Fideo',
+    );
+  }
+
+  /**
+   * Setup the simple test and load the module file.
+   */
+  public function setUp() {
+    drupal_load('module', 'fideo');
+
+    parent::setUp();
+  }
+
+  /**
+   * Test the timecode function from the fideo module on different inputs.
+   */
+  public function testGetTimecode() {
+
+    $assertIdentical = array(
+      // Full format.
+      '01:02:03.04' =>      3723.04,
+      '01:02.03' =>         62.03,
+      '01.02' =>            1.02,
+
+      // Variations of the above.
+      '111:222:333:444' =>  FALSE, // Contains 111 days, expect invalid.
+      '111:222:333' =>      413253.0, // 111 hours, 222 minutes, 333 seconds.
+
+      // Tests with a wide range of weird input.
+      '0000:2234:11.435' => 134051.435,
+      '0000:2234:11.435' => 134051.435,
+      '2234:11.435' =>      134051.435,
+      '14,39' =>            14.39,
+      '11,45:30:11.2343' => 43031.2343,
+      '1,2:33:20' =>        6320.0,
+      '0.11:33:,' =>        2376.0,
+      'asd,11:33' =>        33.0,
+      '::33' =>             33.0,
+      '1' =>                1.0,
+      '1:' =>               60.0,
+      '1::' =>              3600.0,
+      '1.5:' =>             90.0,
+      '1:30' =>             90.0,
+      '123abc' =>           123.0,
+      'abc123' =>           0.0,
+      ':::' =>              FALSE, // Expect FALSE as it contains too many semicolons.
+      '::' =>               0.0,
+      ':1' =>               1.0,
+      ':.999' =>            0.999,
+      '.2' =>               0.2,
+      '0777' =>             777.0,
+      '0x1A:0x1A' =>        0.0,
+    );
+
+    foreach ($assertIdentical as $input => $expected) {
+      $result = fideo_timecode_to_seconds($input);
+
+      $this->assertIdentical($result, $expected, t('Input <code>@input</code> returned <code>@result</code> expected <code>@expected</code>.', array(
+        '@input' => var_export($input, TRUE),
+        '@result' => var_export($result, TRUE),
+        '@expected' => var_export($expected, TRUE),
+      )), 'Fideo');
+    }
+  }
+}

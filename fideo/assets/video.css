@@ -14,7 +14,8 @@
 .fideo-wrapper {
   position: relative;
   width: 805px;
-  height: 400px;
+  min-height: 400px;
+  *height:440px;
 }
 
 .video-js-box .vjs-subtitles {
@@ -34,6 +35,9 @@
   width:267px;
   height:200px;
   position: absolute;
+}
+.fideo-item {
+  left: 267px;
 }
 
 #fideo-cfideo_video_2 {

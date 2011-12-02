@@ -1,15 +1,19 @@
 <?php
-// $Id: fideo.theme.inc 109 2011-06-07 14:39:55Z thijs $
 
 /**
  * @file
- * Theme functions for the fideo module.
+ * This file contains all the theme function that belong to the Fideo module.
+ *
+ * @author One Shoe
  */
 
 /**
  * Theme function for rendering a track element.
+ *
+ * @param array $variables
  */
-function theme_fideo_track($element) {
+function theme_fideo_track($variables) {
+  $element = $variables['element'];
   $attributes = array(
     'kind' => $element['#type'],
     'src' => $element['#file'],
@@ -24,8 +28,11 @@ function theme_fideo_track($element) {
 
 /**
  * Theme function for rendering a source element.
+ *
+ * @param array $variables
  */
-function theme_fideo_source($element) {
+function theme_fideo_source($variables) {
+  $element = $variables['element'];
   $attributes = array(
     'src' => $element['#file'],
   );
@@ -45,28 +52,32 @@ function theme_fideo_source($element) {
     $output .= '\'';
   }
   $output .= " />\n";
+
   return $output;
 }
 
 /**
  * Theme function for rendering the video container.
+ *
+ * @param array $variables
  */
-function theme_fideo_video($element) {
+function theme_fideo_video($variables) {
+  $element = $variables['element'];
   static $counter = 0, $assets_added = FALSE;
   // Update the counter even if the video element has its own ID.
   $counter++;
 
-  if (!$assets_added) {
+  if (!$assets_added && empty($element['#skip_assets'])) {
     $path = drupal_get_path('module', 'fideo') .'/assets';
     drupal_add_js($path .'/video.js');
     drupal_add_js($path .'/fideo.js');
-    drupal_add_css($path .'/video-js.css', 'module', 'screen');
-    drupal_add_css($path .'/video.css', 'module', 'screen');
+    drupal_add_css($path .'/video-js.css', array('media' => 'screen'));
+    drupal_add_css($path .'/video.css', array('media' => 'screen'));
     $assets_added = TRUE;
   }
 
   $attributes = array(
-    'id' => (!empty($element['#id']) ? $element['#id'] : 'fideo_video_'. ($counter)),
+    'id' => (!empty($element['#id']) ? $element['#id'] : 'fideo-video-'. ($counter)),
   );
   $element['#id'] = $attributes['id'];
   if (!empty($element['#disabled'])) {
@@ -80,22 +91,32 @@ function theme_fideo_video($element) {
     // If #multistream is set, it should contain a CSS selector.
     $js['multi'] = $element['#multistream'];
   }
+
+  $js['ratio'] = $attributes['height'] / $attributes['width'];
+  //$attributes['width'] = '100%';
+  //$attributes['height'] = '100%';
+  //unset($attributes['width']);
+  //unset($attributes['height']);
+
   drupal_add_js(array('fideo' => array($element['#id'] => $js)), 'setting');
 
   if (!empty($element['#poster'])) {
     $attributes['poster'] = $element['#poster'];
   }
   $element['#attributes'] = $attributes;
+
   foreach (array('autoplay', 'controls', 'preload') as $key) {
     if (isset($element['#'. $key]) && $element['#'. $key] !== FALSE) {
       $attributes[$key] = ($element['#'. $key] === TRUE ? $key : $element['#'. $key]);
     }
   }
 
-  $output = '<div class="fideo-item" id="fideo-c'. check_plain($element['#id']) .'"><div class="video-js-box">' ."\n";
+  $output = '<div class="fideo-item" id="fideo-'. check_plain($element['#id']) .'"><div class="video-js-box">' ."\n";
   $output .= '<video'. drupal_attributes($attributes) .">\n";
   $output .= $element['#children'];
-  $output .= theme('fideo_fallback', $element);
+  if (!empty($element['#flash_fallback'])) {
+    $output .= theme('fideo_fallback', array('element' => $element));
+  }
   $output .= "</video>\n</div>\n</div>";
 
   return $output;
@@ -103,8 +124,11 @@ function theme_fideo_video($element) {
 
 /**
  * Theme function for rendering a container width slide images.
+ *
+ * @param array $variables
  */
-function theme_fideo_slides($element) {
+function theme_fideo_slides($variables) {
+  $element = $variables['element'];
   static $counter = 0;
   $counter++;
 
@@ -134,35 +158,49 @@ function theme_fideo_slides($element) {
 
 /**
  * Theme function for rendering a single slide item.
+ *
+ * @param array $variables
  */
-function theme_fideo_slide($element) {
+function theme_fideo_slide($variables) {
+  $element = $variables['element'];
   $element['#attributes']['class'] = (!empty($element['#attributes']['class']) ? $element['#attributes']['class'] .' ' : ''). 'fideo-slide';
   $output = '<div'. drupal_attributes($element['#attributes']) .'>';
   if (!empty($element['#file'])) {
-    $alt = _fideo_check_plain($element['#alt']);
-    $output .= '<img src="'. check_plain($element['#file']) .'" alt="'. $alt .'" title="'. $alt .'" />';
+    $element['#alt'] = isset($element['#alt']) ? $element['#alt'] : '';
+    $output .= theme('image', array('path' => $element['#file'], 'alt' => $element['#alt'], 'title' => $element['#alt']));
   }
-  $output .= $element['#children'] .'</div>';
+
+  if (isset($element['#children'])) {
+    $output .= $element['#children'];
+  }
+
+  $output .= '</div>';
 
   return $output;
 }
 
 /**
  * Theme function for rendering the fallback player.
+ *
+ * @param array $variables
  */
-function theme_fideo_fallback($element) {
+function theme_fideo_fallback($variables) {
+  $element = $variables['element'];
   $output = '';
+
+  module_load_include('inc', 'fideo', 'fideo.render');
+
   // Try to find an MP4 version for adding the Flash player fallback.
   if ($keys = _fideo_element_by_type($element, 'source', '#mimetype', 'video/mp4')) {
     // Use the first-found mp4 element.
     $source = $element[$keys[0]];
-    $player_swf = url(drupal_get_path('module', 'fideo') .'/assets/flowplayer/flowplayer-3.2.5.swf');
+    $player_swf = base_path() . variable_get('fideo_flowplayer_src', drupal_get_path('module', 'fideo') . FIDEO_DEFAULT_FLOWPLAYER_SRC);
 
     $attributes = array(
       'id' => $element['#id'] .'-flash',
       'class' => 'vjs-flash-fallback',
-      'width' => $element['#attributes']['width'],
-      'height' => $element['#attributes']['height'],
+      'width' => '100%',
+      'height' => '100%',
       'type' => 'application/x-shockwave-flash',
       'data' => $player_swf,
     );
@@ -176,12 +214,23 @@ function theme_fideo_fallback($element) {
 
     $playlist[] = $item;
 
+    // Include the fideo.render.inc file so we are able to use the flashvar
+    // helper function.
+    module_load_include('inc', 'fideo', 'fideo.render');
+
     $output .= '<object'. drupal_attributes($attributes) .">\n";
     $output .= '<param name="movie" value="'. check_plain($player_swf) .'" />';
     $output .= '<param name="allowfullscreen" value="true" />';
     $output .= '<param name="flashvars" value=\''. (_fideo_fallback_flashvars($element, $source)) .'\' />' ."\n";
     if (!empty($element['#poster'])) {
-      $output .= '<img src="'. check_plain($element['#poster']) .'" width="'. check_plain($attributes['width']) .'" height="'. check_plain($attributes['height']) .'" alt="'. t('Unable to play video.') .'" />';
+
+      $output .= theme('image', array(
+        'path' => $element['#poster'],
+        'width' => check_plain($attributes['width']),
+        'height' => check_plain($attributes['height']),
+        'alt' => t('Unable to play video.')
+      ));
+
     }
     $output .= "</object>\n";
   }
@@ -191,8 +240,12 @@ function theme_fideo_fallback($element) {
 
 /**
  * Theme function for rendering HTML markers.
+ *
+ * @param array $variables
  */
-function theme_fideo_markers($element) {
+function theme_fideo_markers($variables) {
+  $element = $variables['element'];
+
   $element['#attributes']['id'] = !empty($element['#id']) ? $element['#id'] : 'fideo_markers';
 
   $js = array('fideo_markers' => array('type' => 'markers'));
@@ -203,7 +256,8 @@ function theme_fideo_markers($element) {
 
   // Add required js files.
   $path = drupal_get_path('module', 'fideo');
-  drupal_add_js($path .'/assets/qtip/jquery.qtip-1.0.0-rc3.min.js');
+
+  drupal_add_js(base_path() . variable_get('fideo_qtip_src', drupal_get_path('module', 'fideo') . FIDEO_DEFAULT_QTIP_SRC));
   drupal_add_js(array('fideo' => $js), 'setting');
 
   return '<div '. drupal_attributes($element["#attributes"]) .'>'. $element['#children'] .'</div>';
@@ -211,94 +265,39 @@ function theme_fideo_markers($element) {
 
 /**
  * Theme function for rendering a timecode marker
- */
-function theme_fideo_marker($element) {
-  // Add class to attributes
-  $element['#attributes']['class'] .= ($element['#attributes']['class']) ? ' timecode-marker' : 'timecode-marker';
-  //$element['#attributes']['title'] = $element['#value'];
-  return l((!drupal_is_front_page()) ? $_GET['q'] : $element['#value'], $path, array('fragment' => 'start:'. $element['#start'] .':end:'. $element['#end'], 'attributes' => $element['#attributes'], 'html' => TRUE));
-}
-
-/**
- * Helper function for building the flashvars for the fallback player embed code.
- */
-function _fideo_fallback_flashvars($element, $source) {
-  $config = array();
-  $plugins = array();
-  $playlist = array();
-
-  // Build up the playlist.
-  if (!empty($element['#poster'])) {
-    // Add the poster as first item in the playlist array.
-    $playlist[] = $element['#poster'];
-  }
-
-  // Main video item.
-  $clip = array(
-    'url' => $source['#file'],
-    'autoBuffering' => TRUE,
-    'autoPlay' => ($element['#autoplay'] ? TRUE : FALSE),
-  );
-
-  if ($tracks = _fideo_element_by_type($element, array('captions', 'subtitles', 'track'))) {
-    // Find captions or subtitles, and use only the first one. Beware that
-    // Flowplayer only supports *.srt subtitles.
-
-    $clip['captionUrl'] = $element[$tracks[0]]['#file'];
-
-    $plugins['captions'] = array(
-      'url' => 'flowplayer.captions-3.2.2.swf',
-      'captionTarget' => 'content',
-    );
-    $plugins['content'] = array(
-      'url' => 'flowplayer.content-3.2.0.swf',
-      'bottom' => 5,
-      'height' => 40,
-      'backgroundColor' => 'transparent',
-      'backgroundGradient' => 'none',
-      'border' => 0,
-      'textDecoration' => 'outline',
-      'style' => array(
-        'body' => array('fontSize' => 18, 'fontFamily' => 'Helvetica,Arial,sans-serif', 'textAlign' => 'center', 'color' => '#ffffff'),
-      ),
-    );
-  }
-
-  $playlist[] = $clip;
-
-  $config['playlist'] = $playlist;
-  if (!empty($plugins)) {
-    $config['plugins'] = $plugins;
-  }
-
-  $output = 'config='. drupal_to_js($config);
-  return $output;
-}
-
-/**
- * Helper function for cleaning up a string that is about to be used in
- * a javascript scope.
  *
- * The workings of this function are based on the drupal_to_js() function with
- * the exception that it doesn't escape single quotes (') as the string will be
- * wrapped in double quotes.
+ * @param array $variables
  */
-function _fideo_clean_js_string($str) {
-  return str_replace(array("\r", "\n", "<", ">", "&"),
-    array('\r', '\n', '\x3c', '\x3e', '\x26'),
-    addcslashes($str, '"\\'));
+function theme_fideo_marker($variables) {
+  $element = $variables['element'];
+
+  // Create an array item where we can store the class names.
+  if (!isset($element['#attributes']['class'])) {
+    $element['#attributes']['class'] = '';
+  }
+
+  // Add class to attributes
+  $element['#attributes']['class'] .= (isset($element['#attributes']['class'])) ? ' timecode-marker' : 'timecode-marker';
+  //$element['#attributes']['title'] = $element['#value'];
+
+  $path = !drupal_is_front_page() ? $_GET['q'] : $element['#value'];
+
+  // @todo Later on, change the start and end times of these markers to the new Media Fragments format.
+  return l($element['#value'], $path, array('fragment' => 'start:'. $element['#start'] .':end:'. $element['#end'], 'attributes' => array('class' => array($element['#attributes']['class'])), 'html' => TRUE));
 }
 
 /**
- * Helper function for performing a check_plain() for HTML attributes, which
- * also encodes the newline characters.
+ * Theme function for Fideo markup.
+ *
+ * @param array $variables
+ *
+ * @return array
  */
-function _fideo_check_plain($str) {
-  $str = check_plain($str);
-  return $str;
-}
-
-function theme_fideo_markup($element) {
+function theme_fideo_markup($variables) {
+  $element = $variables['element'];
+  if (!isset($element['#value']) && isset($element['#children'])) {
+    $element['#value'] = $element['#children'];
+  }
   $output = $element['#value'];
   return $output;
 }

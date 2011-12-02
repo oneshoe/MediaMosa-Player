@@ -1,23 +1,29 @@
-// $Id: fideo.js 119 2011-06-08 07:43:01Z thijs $
+
 var Drupal = Drupal || { 'settings': {}, 'behaviors': {}, 'themes': {}, 'locale': {} };
 Drupal.settings.fideo = {};
 Drupal.fideoCache = {};
 
-Drupal.behaviors.fideo = function(context) {
-  // First pass, to find all elements and initialize.
-  for (k in Drupal.settings.fideo) {
-    if ($('#'+ k, context).get(0)) {
-      var fideo = new Drupal.fideo(k, Drupal.settings.fideo[k]);
-      fideo.init();
-    }
-  }
+(function ($) {
 
-  // Second pass for setting up the player.
-  for (var k in Drupal.fideoCache) {
-    if (!Drupal.fideoCache[k].setupDone) {
-      Drupal.fideoCache[k].setup();
+Drupal.behaviors.fideo = {
+
+  attach: function(context) {
+    // First pass, to find all elements and initialize.
+    for (k in Drupal.settings.fideo) {
+      if ($('#'+ k, context).get(0)) {
+        var fideo = new Drupal.fideo(k, Drupal.settings.fideo[k]);
+        fideo.init();
+      }
     }
+
+    // Second pass for setting up the player.
+    for (var k in Drupal.fideoCache) {
+      if (!Drupal.fideoCache[k].setupDone) {
+        Drupal.fideoCache[k].setup();
+      }
+    }  
   }
+  
 }
 
 Drupal.fideo = function(el, config) {
@@ -51,38 +57,44 @@ Drupal.fideo.prototype.init = function() {
 
   if (this.config.multi && this.registerParent(this.config.multi)) {
     this.parent.addMultiChild(this);
+    
+    var c = this;
 
     this.addListener('onSetup', function() {
-      this.player.volume(0);
-      this.hideControls();
-      var c = this;
+      c.player.volume(0);
+      c.hideControls();
 
-      this.parent.player.addVideoListener('play', function() {
+      c.parent.player.addVideoListener('play', function() {
         c.syncTimecode(c.parent.player.currentTime());
         c.player.play();
 
         setInterval(function() {
+          c.synced = false;
           c.syncTimecode(c.parent.player.currentTime());
-        }, 2000);
-
+        }, 5000);
       });
-      this.parent.player.addVideoListener('pause', function() {
+      
+      c.parent.player.addVideoListener('pause', function() {
         c.player.pause();
         c.player.currentTime(this.currentTime());
       });
-      this.parent.player.addVideoListener('waiting', function() {
+      
+      c.parent.player.addVideoListener('waiting', function() {
         c.player.pause();
         c.syncTimecode(c.parent.player.currentTime());
       });
-      this.parent.player.addVideoListener('seeked', function() {
+      
+      c.parent.player.addVideoListener('seeked', function() {
+        // @todo Check here if the parent is playing before calling play().
+        c.player.play();
         c.syncTimecode(c.parent.player.currentTime());
       });
 
       // Configure onclick listener
-      this.enlargePlayer();
+      c.enlargePlayer();
 
       // Setup fullscreen mode
-      $(this.parent.player.fullscreenControl).toggle(function () {
+      $(c.parent.player.fullscreenControl).toggle(function () {
         c.setupFullscreenMode(true);
       }, function() {
         c.setupFullscreenMode(false);
@@ -93,6 +105,9 @@ Drupal.fideo.prototype.init = function() {
   if (this.config.type == 'slides' && this.registerParent(this.config.target)) {
     // For now, we have to check for slide changes with parent.
     var a = this;
+    var maxh = $('#' + this.el).parent().height(),
+      ratio = 0.75, maxw = maxh / ratio;
+    
     $('.fideo-slide:first', this.obj).addClass('fideo-active');
     this.parent.addListener('onSetup', function() {
       this.setSlideTiming(a.config.timecodes);
@@ -104,19 +119,17 @@ Drupal.fideo.prototype.init = function() {
 
     $('.fideo-slides').toggle(function () {
       $(this).css({'z-index' : '100'});
-      $(this).animate({'height' : '400', 'width' : '534'}, 300);
+      $(this).animate({'height' : maxh, 'width' : maxw}, 300);
     }, function () {
       var c = this;
 
-      $(c).animate({'height' : '200', 'width' : '267'}, 300);
-      // Wait al little, till the animation is finished
+      $(c).animate({'height' : 267 * ratio, 'width' : '267'}, 300);
+      // Wait a little, till the animation is finished
       setTimeout(function () {
         $(c).css({'z-index' : '0'});
       }, 300);
     });
   }
-
-
 
   if (this.config.type == 'markers' && this.registerParent(this.config.target)) {
     // Style the player, to make space for the markers.
@@ -130,11 +143,11 @@ Drupal.fideo.prototype.init = function() {
 
       this.parent.addListener('onSetup', function() {
         var dur = null;
-        if (typeof this.config.duration != 'undefined') {
-          dur = this.config.duration;
+        if (typeof c.config.duration != 'undefined') {
+          dur = c.parent.config.duration;
         }
         else if (typeof this.player.duration() != 'undefined') {
-          dur = this.player.duration();
+          dur = c.parent.player.duration();
         }
 
         if (dur) {
@@ -147,6 +160,11 @@ Drupal.fideo.prototype.init = function() {
         }
       });
     }
+  }
+  
+  if (this.config.type == 'video' && !this.config.multi) {
+    // Use the primary video to resize the stage.
+    this.resizeContainer();
   }
 
   this.initDone = true;
@@ -163,8 +181,10 @@ Drupal.fideo.prototype.callListeners = function(type, arg) {
 
 Drupal.fideo.prototype.syncTimecode = function(ptc) {
   var c = this.player.currentTime();
-  if (ptc - c > 0.3 || ptc - c < 0.3) {
-    this.player.currentTime(ptc + 0.3);
+  if (this.synced) return;
+  if (ptc - c > 0.4 || ptc - c < 0.4) {
+    this.player.currentTime(ptc + 0.2);
+    this.synced = true;
   }
 }
 
@@ -196,11 +216,27 @@ Drupal.fideo.prototype.setup = function() {
     if (this.config.multi) conf.playOnClick = false;
     this.player = new VideoJS(this.el, conf);
     this.player.fideoEl = this.el;
-    var a = this;
   }
 
   this.setupDone = true;
   this.callListeners('onSetup');
+}
+
+Drupal.fideo.prototype.resizeContainer = function() {
+  var el = $('#' + this.el), elp = el.parent();
+  var position = elp.parent().position();
+  var availw = elp.parent().parent().width();
+  
+  var w = availw - position.left;
+  var h = Math.round(w * this.config.ratio);
+  elp.add(el).css({
+    width: w,
+    height: h
+  }).find('.vjs-poster').css({
+    width: w,
+    height: h
+  })
+  elp.parent().parent().height(h);
 }
 
 Drupal.fideo.prototype.registerParent = function(el) {
@@ -414,3 +450,5 @@ if (typeof(Drupal.attachBehaviors) == 'undefined') {
     Drupal.behaviors.fideo(document);
   });
 }
+
+})(jQuery);

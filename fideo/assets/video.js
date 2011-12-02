@@ -1,4 +1,6 @@
 /*
+$Id: video.js 205 2011-11-21 13:55:41Z thijs $
+
 VideoJS - HTML5 Video Player
 v2.0.2
 
@@ -119,7 +121,7 @@ var VideoJS = JRClass.extend({
   /* Local Storage
   ================================================================================ */
   setLocalStorage: function(key, value){
-    if (!localStorage) { return; }
+    if (typeof localStorage == 'undefined' || !localStorage) { return; }
     try {
       localStorage[key] = value;
     } catch(e) {

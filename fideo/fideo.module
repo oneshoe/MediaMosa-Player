@@ -1,5 +1,4 @@
 <?php
-// $Id: fideo.module 109 2011-06-07 14:39:55Z thijs $
 
 /**
  * @file
@@ -9,325 +8,99 @@
  * up to become a middleware module between MediaMosa and the player in Drupal.
  *
  * @author One Shoe
+ *
+ * @todo Make a function that excepts HH:mm:ss.ms, HH:mm:ss or mm:ss input and
+ *   returns the timecode in seconds as float.
+ * @todo Make a function that excepts (float) seconds and returns format like
+ *   12.5s (see
+ *   http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#naming-time)
+ * @todo Implement hook_library() for some of the used plugins perhaps?
  */
 
 /**
+ * Define constants stating default values for third-party plugins.
+ */
+
+define('FIDEO_DEFAULT_FLOWPLAYER_SRC', '/assets/flowplayer/flowplayer-3.2.5.swf');
+define('FIDEO_DEFAULT_QTIP_SRC', '/assets/qtip/jquery.qtip-1.0.0-rc3.min.js');
+
+/**
+ * Implements hook_permission().
+ * @link http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_permission/7
+ *
+ * @return array
+ */
+function fideo_permission() {
+  return array(
+    'administer fideo' => array(
+      'title' => t('Administer Fideo'),
+      'description' => t('Configure the Fideo module.'),
+    ),
+  );
+}
+
+/**
  * Implements hook_menu().
+ * @link http://api.drupal.org/api/drupal/developer--hooks--core.php/function/hook_menu/6
+ *
+ * @return array
  */
 function fideo_menu() {
+  $items = array();
+
   $items['fideo'] = array(
-    'title' => 'Fideo Testpage',
+    'title' => 'HTML5 weblectures player',
+    'file' => 'fideo.demo.inc',
     'page callback' => 'fideo_testpage',
     'access arguments' => array('access content'),
   );
+
+  // Admin page to configure the Fideo module.
+  $items['admin/config/media/fideo'] = array(
+    'title' => 'Fideo configuration',
+    'description' => 'Configure the Fideo module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fideo_configuration_form'),
+    'file' => 'fideo.admin.inc',
+    'access arguments' => array('administer fideo'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
   return $items;
 }
 
 /**
- * Demo structure for Drupal to Fideo conversion.
+ * Implements hook_theme().
  */
-function fideo_format() {
-  $media = array(
-    'primary' => array(
-      '#type' => 'video',
-      '#id' => 'fideo-primary',
-      '#duration' => 1140,
-      '#attributes' => array(
-        'width' => 534,
-        'height' => 400,
-        'controls' => 'controls',
-      ),
-      '#poster' => base_path() .'assets/video/mozcamp_still.jpg',
-      array(
-        '#type' => 'source',
-        '#mimetype' => 'video/mp4',
-        '#codecs' => 'avc1.42E01E, mp4a.40.2',
-        '#file' => base_path() .'assets/video/mozcamp.handbrake.mp4?1',
-      ),
-      'webm' => array(
-        '#type' => 'source',
-        '#mimetype' => 'video/webm',
-        '#codecs' => 'vp8, vorbis',
-        '#file' => base_path() .'assets/video/mozcamp.ffmpeg.webm?1',
-      ),
-      'ogv' => array(
-        '#type' => 'source',
-        '#mimetype' => 'video/ogg',
-        '#codecs' => 'theora, vorbis',
-        '#file' => base_path() .'assets/video/mozcamp.ffmpeg.ogv?1',
-      ),
-      array(
-        '#type' => 'subtitles',
-        '#lang' => 'nl',
-        '#title' => t('Dutch'),
-        '#file' => base_path() .'assets/video/mozcamp.captions.srt',
-      ),
-    ),
-    'secondary' => array(
-      '#type' => 'video',
-      '#disabled' => TRUE,
-      '#multistream' => 'fideo-primary',
-      '#attributes' => array(
-        'width' => 267, 'height' => 200, 'controls' => 'controls',
-      ),
-      '#poster' => base_path() .'assets/video/mozcamp_slide.jpg',
-      array(
-        '#type' => 'source',
-        '#mimetype' => 'video/mp4',
-        '#codecs' => 'avc1.42E01E, mp4a.40.2',
-        '#file' => base_path() .'assets/video/mozcamp.handbrake.mp4?2',
-      ),
-      'webm' => array(
-        '#type' => 'source',
-        '#mimetype' => 'video/webm',
-        '#codecs' => 'vp8, vorbis',
-        '#file' => base_path() .'assets/video/mozcamp.ffmpeg.webm?2',
-      ),
-      'ogv' => array(
-        '#type' => 'source',
-        '#mimetype' => 'video/ogg',
-        '#codecs' => 'theora, vorbis',
-        '#file' => base_path() .'assets/video/mozcamp.ffmpeg.ogv?2',
-      ),
-    ),
-    'slides' => array(
-      '#type' => 'slides',
-      '#target' => 'fideo-primary',
-    ),
-    'markers' => array(
-      '#type' => 'markers',
-      '#target' => 'fideo-primary',
-    ),
-  );
-
-  $timecodes = array(2.031, 4.661, 8.75, 10.874, 12.945, 30.112, 73.847, 204.292, 483.464, 486.061, 487.62, 490.251, 492.863, 495.463, 498.076, 499.141, 500.688, 504.856, 508.48, 509.54, 512.214, 514.823, 515.875, 630.102, 639.983, 692.459);
-  $alts = array(
-    'MozCamp.odp - OpenOffice.org Impress',
-    'MozCamp.odp - OpenOffice.org Impress',
-    'MozCamp.odp - OpenOffice.org Impress
-mozilla europe
-"The Dutch Mozilla Community Exposed"
-Wim Benes',
-    'mozilla europe
-"The Dutch Mozilla Community Exposed"
-Wim Benes',
-    'mozilla europe
-"The Dutch Mozilla Community Exposed"
-Wim Benes',
-    'mozilla europe
-"The Dutch Mozilla Community Exposed"
-Wim Benes',
-    'mozilla europe
-Fryslan
-Nederland
-Europe
-Planet',
-    'mozilla europe
-NETSCAPE.
-NAVIGATOR',
-    'MozCamp.odp - OpenOffice.org Impress
-mozilla europe',
-    'Live-Uitzending Auditorium SURFnet - Mozilla Firefox
-Live
-Uitzending Auditorium SURFnet',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    'mozilla europe
-NETSCAPE.
-NAVIGATOR',
-    'mozilla
-Krij Firefox 3 yn it Frysk',
-    'mozilla messaging
-Download Thunderbird 3 Beta 2',
-    'mozilla europe
-www.mozilla-nl.org
-www.mozbrowser.nl
-www.mozilla-europe.org',
-  );
-
-  for ($i = 0; $i < count($timecodes); $i++) {
-    $media['slides'][$i] = array(
-      '#type' => 'slide',
-      '#start' => $timecodes[$i],
-      '#file' => base_path() .'assets/stills/'. str_pad($i, 3, '0', STR_PAD_LEFT) .'.jpg',
-      '#alt' => $alts[$i],
+function fideo_theme() {
+  $theme = array();
+  foreach (array('video', 'track', 'source', 'fallback', 'slide', 'slides', 'markup', 'markers', 'marker') as $el) {
+    $theme['fideo_'. $el] = array(
+      'variables' => array('element' => array()),
+      'file' => 'fideo.theme.inc',
     );
   }
-
-  $media['markers'][$i++] = array(
-    '#type' => 'marker',
-    '#start' => 3.3,
-    '#end' => 6.4,
-    '#value' => 'Introduction',
-  );
-
-  $media['markers'][$i++] = array(
-    '#type' => 'marker',
-    '#start' => 110.3,
-    '#end' => 156.4,
-    '#value' => 'Mozilla Firefox Frysian translation team',
-  );
-  $media['markers'][$i++] = array(
-    '#type' => 'marker',
-    '#start' => 1110.3,
-    '#end' => 1100.4,
-    '#value' => 'Time for questions',
-  );
-  $media['markers'][$i++] = array(
-   '#type' => 'marker',
-   '#start' => 400.3,
-   '#end' => 410.4,
-   '#value' => 'History: from Netscape, to Mozilla, to Firefox',
-  );
-  $media['markers'][$i++] = array(
-    '#type' => 'marker',
-    '#start' => 600.3,
-    '#end' => 650.4,
-    '#value' => '<img src="'. base_path() .'assets/stills/firefox_logo.png" width="100" height="100" alt="FireFox" /><br />The FireFox browser.',
-  );
-
-  //Create a wrapper
-  $media['#prefix'] = '<div id="fideo"><div class="fideo-wrapper">';
-  $media['#suffix'] = '</div></div>';
-
-  return $media;
-}
-
-function fideo_testpage() {
-  $media = fideo_format();
-  $render = fideo_render($media);
-
-  return $render;
-}
-
-function _fideo_prepare_object(&$elements) {
-
-}
-
-function fideo_render(&$elements) {
-  if (!empty($elements['#type']) && ($info = _fideo_element_info($elements['#type']))) {
-    $elements += $info;
-  }
-
-  // Make any final changes to the element before it is rendered. This means
-  // that the $element or the children can be altered or corrected before the
-  // element is rendered into the final text.
-  if (isset($elements['#pre_render'])) {
-    foreach ($elements['#pre_render'] as $function) {
-      if (function_exists($function)) {
-        $elements = $function($elements);
-      }
-    }
-  }
-
-  $content = '';
-  if (!isset($elements['#sorted'])) {
-    //uasort($elements, "element_sort");
-  }
-
-  if (!isset($elements['#children'])) {
-    $children = element_children($elements);
-    // Render all the children that use a theme function.
-    if (isset($elements['#theme']) && empty($elements['#theme_used'])) {
-      $elements['#theme_used'] = TRUE;
-
-      $previous = array();
-      foreach (array('#value', '#type', '#prefix', '#suffix') as $key) {
-        $previous[$key] = isset($elements[$key]) ? $elements[$key] : NULL;
-      }
-      // If we rendered a single element, then we will skip the renderer.
-      if (empty($children)) {
-        $elements['#printed'] = TRUE;
-      }
-      else {
-        $elements['#value'] = '';
-      }
-      $elements['#type'] = 'markup';
-
-      unset($elements['#prefix'], $elements['#suffix']);
-      $content = theme($elements['#theme'], $elements);
-
-      foreach (array('#value', '#type', '#prefix', '#suffix') as $key) {
-        $elements[$key] = isset($previous[$key]) ? $previous[$key] : NULL;
-      }
-    }
-    // Render each of the children using drupal_render and concatenate them.
-    if (!isset($content) || $content === '') {
-      foreach ($children as $key) {
-        $content .= fideo_render($elements[$key]);
-      }
-    }
-  }
-
-  if (isset($content) && $content !== '') {
-    $elements['#children'] = $content;
-  }
-
-  // Until now, we rendered the children, here we render the element itself
-  if (!isset($elements['#printed'])) {
-    $content = theme(!empty($elements['#renderer']) ? $elements['#renderer'] : (!empty($elements['#type']) ? 'fideo_'. $elements['#type'] : 'markup'), $elements);
-    $elements['#printed'] = TRUE;
-  }
-
-  if (isset($content) && $content !== '') {
-    // Filter the outputted content and make any last changes before the
-    // content is sent to the browser. The changes are made on $content
-    // which allows the output'ed text to be filtered.
-    if (isset($elements['#post_render'])) {
-      foreach ($elements['#post_render'] as $function) {
-        if (function_exists($function)) {
-          $content = $function($content, $elements);
-        }
-      }
-    }
-    $prefix = isset($elements['#prefix']) ? $elements['#prefix'] : '';
-    $suffix = isset($elements['#suffix']) ? $elements['#suffix'] : '';
-    return $prefix . $content . $suffix;
-  }
+  return $theme;
 }
 
 /**
- * Provides element information.
+ * Main render function. Accepts array in similar to form definition, see
+ * fideo_demo_format() for an example.
+ *
+ * @param array $elements
  */
-function _fideo_element_info($type) {
-  static $cache;
+function fideo_render(&$elements) {
+  // Include the render.inc file.
+  module_load_include('inc', 'fideo', 'fideo.render');
 
-  $basic_defaults = array(
-    '#attributes' => array(),
-    '#tree' => FALSE,
-    '#parents' => array(),
-  );
-
-  if (!isset($cache)) {
-    $cache = array();
-    foreach (module_implements('fideo_elements') as $module) {
-      $elements = module_invoke($module, 'fideo_elements');
-      if (isset($elements) && is_array($elements)) {
-        $cache = array_merge_recursive($cache, $elements);
-      }
-    }
-    if (sizeof($cache)) {
-      foreach ($cache as $element_type => $info) {
-        $cache[$element_type] = array_merge_recursive($basic_defaults, $info);
-      }
-    }
-  }
-
-  return $cache[$type];
+  // Call the helper function from the render.inc file.
+  return _fideo_render($elements);
 }
 
 /**
  * Implements hook_fideo_elements().
+ *
+ * @return array
  */
 function fideo_fideo_elements() {
   $types = array();
@@ -336,7 +109,14 @@ function fideo_fideo_elements() {
     '#poster' => '',
     '#autoplay' => FALSE,
     '#controls' => TRUE,
-    '#preload' => FALSE,
+    '#preload' => 'metadata',
+
+    // Whether or not to use the Flash fallback player in output.
+    '#flash_fallback' => TRUE,
+
+    // Provide TRUE if you want to avoid Fideo adding Javascript and CSS assets.
+    '#skip_assets' => FALSE,
+
     '#attributes' => array(),
     '#value' => NULL,
     '#prefix' => '',
@@ -396,59 +176,44 @@ function fideo_fideo_elements() {
 }
 
 /**
- * Implements hook_elements().
+ * Convert a timecode string to seconds.milliseconds. The string should be
+ * provided in the format: HH:MM:SS.ms. Hours and minutes are optional, so the
+ * following inputs are valid too:
+ * 01:02:03.04 (1 hour, 2 minutes, 3 seconds and 40 milliseconds) = 3723.04
+ * 01:02.03 (1 minute, 2 seconds and 30 milliseconds) = 62.03
+ * 01.02 (1 second and 20 milliseconds) = 1.02
+ * 01: (1 minute) = 60
+ *
+ * @param string $timecode
+ *   In HH:MM:SS.ms format, MM:ss.ms, MM:ss, ss.ms or ss format.
+ *
+ * @return float
+ *   Returns the amount of seconds as float.
  */
-function fideo_elements() {
-  return fideo_fideo_elements();
-}
-
-/**
- * Implements hook_theme().
- */
-function fideo_theme() {
-  $theme = array();
-  foreach (array('video', 'track', 'source', 'fallback', 'slide', 'slides', 'markup', 'markers', 'marker') as $el) {
-    $theme['fideo_'. $el] = array(
-      'arguments' => array('element' => array()),
-      'file' => 'fideo.theme.inc',
-    );
-  }
-  return $theme;
-}
-
-/**
- * Pre-render function for video tag.
- */
-function _fideo_pre_render_video($element) {
-  if (!empty($element['sources'])) {
-    foreach (element_children($element['sources']) as $key) {
-      $element['sources'][$key] += array(
-        '#type' => 'source',
-      );
-    }
-  }
-  if (!empty($element['tracks'])) {
-    foreach (element_children($element['tracks']) as $key) {
-      $element['tracks'][$key] += array(
-        '#type' => 'track',
-      );
-    }
+function fideo_timecode_to_seconds($timecode) {
+  // Make sure the timecode string is not empty.
+  if (drupal_strlen($timecode) < 1) {
+    return FALSE;
   }
 
-  return $element;
-}
+  // Create an array from the timecode, based on the : character.
+  $time = explode(':', str_replace(',', '.', $timecode));
+  $time_size = count($time);
 
-/**
- * Helper function for finding an element based on type and a specific
- * attribute.
- */
-function _fideo_element_by_type($element, $type, $attr_name = NULL, $attr_value = NULL) {
-  $keys = array();
-  $is_array = is_array($type);
-  foreach (element_children($element) as $key) {
-    if ((($is_array && in_array($element[$key]['#type'], $type)) || (!$is_array && $element[$key]['#type'] == $type)) && (($attr_name && isset($element[$key][$attr_name]) && $element[$key][$attr_name] == $attr_value) || !$attr_name)) {
-      $keys[] = $key;
-    }
+  // Add a zero incase hours and or minutes are missing.
+  if ($time_size > 3) {
+    return FALSE;
   }
-  return $keys;
+  elseif ($time_size == 2) {
+    array_unshift($time, 0);
+  }
+  elseif ($time_size == 1) {
+    array_unshift($time, 0, 0);
+  }
+
+  // Convert the hours and minutes to seconds.
+  $minutes = (floatval($time[0]) * 60) + floatval($time[1]);
+  $seconds = $minutes * 60 + floatval($time[2]);
+
+  return $seconds;
 }
