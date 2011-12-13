@@ -1,7 +1,8 @@
+; $Id: fideo.info 286 2011-12-13 12:55:28Z thijs $
 name = Fideo
 description = "An open video implementation module for MediaMosa."
 package = MediaMosa
 core = 7.x
-version = "7.x-1.1-beta2"
+version = "7.x-1.1-beta3"
 
 files[] = tests/fideo.test

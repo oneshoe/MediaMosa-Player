@@ -1,4 +1,5 @@
 <?php
+// $Id: fideo.render.inc 286 2011-12-13 12:55:28Z thijs $
 
 /**
  * @file
@@ -33,9 +34,6 @@ function _fideo_render(&$elements) {
   }
 
   $content = '';
-  if (!isset($elements['#sorted'])) {
-    //uasort($elements, "element_sort");
-  }
 
   if (!isset($elements['#children'])) {
     $children = element_children($elements);
@@ -153,6 +151,45 @@ function _fideo_pre_render_video($element) {
       );
     }
   }
+
+  // Hackish fixes for MediaMosa that sometimes returns a streaming server
+  // address to a video file. In that case, skip the source for HTML5. Also,
+  // MediaMosa sometimes returns ticket URL's without file extension, making it
+  // harder for certain browsers to recognize files when mimetype isn't enough.
+  $sources = _fideo_element_by_type($element, 'source');
+  foreach ($sources as $key) {
+    if (!empty($element[$key]['#file'])) {
+      $file = $element[$key]['#file'];
+      // MediaMosa returns a streaming URL, even when 'plain' is supplied. In
+      // that case, skip the item in normal rendering.
+      if (!(drupal_substr($file, 0, 4) == 'http' && strpos($file, '://') !== FALSE && strpos($file, '://') <= 5)) {
+        $element[$key]['#skip'] = TRUE;
+        // No extension checking needed here anymore.
+        continue;
+      }
+
+      // When no extension is found, fake an extension to help out some
+      // browsers that have difficulty finding playable sources by mimetype.
+      $extension = (strrpos($file, '.') !== FALSE ? drupal_substr($file, strrpos($file, '.') + 1) : '');
+      if ((!$extension || drupal_strlen($extension) >= 4) && isset($element[$key]['#mimetype'])) {
+        switch ($element[$key]['#mimetype']) {
+          case 'video/mp4':
+            $extension = 'mp4';
+            break;
+          case 'video/webm':
+            $extension = 'webm';
+            break;
+          case 'video/ogv':
+            $extension = 'ogg';
+            break;
+        }
+        if ($extension) {
+          $element[$key]['#file'] .= (strpos($element[$key]['#file'], '?') ? '&' : '?') . 'ext.' . $extension;
+        }
+      }
+    }
+  }
+
   if (!empty($element['tracks'])) {
     foreach (element_children($element['tracks']) as $key) {
       $element['tracks'][$key] += array(
@@ -198,7 +235,9 @@ function _fideo_fallback_flashvars($element, $source) {
   // Build up the playlist.
   if (!empty($element['#poster'])) {
     // Add the poster as first item in the playlist array.
-    $playlist[] = $element['#poster'];
+    // @todo Removed poster image because MediaMosa returns stills without
+    //   extension and this is something Flowplayer can't handle.
+    //$playlist[] = $element['#poster'];
   }
 
   // Main video item.
@@ -207,6 +246,21 @@ function _fideo_fallback_flashvars($element, $source) {
     'autoBuffering' => TRUE,
     'autoPlay' => ($element['#autoplay'] ? TRUE : FALSE),
   );
+
+  // Hack for RTMP streams, unfortunately needed because MediaMosa keeps
+  // acting up.
+  if (drupal_strtolower(drupal_substr($source['#file'], 0, 7)) == 'rtmp://') {
+    // Explode on ampersand to separate file and server.
+    // @todo This is super ugly, find a more stable way to do this.
+    $parts = explode('&file=', $source['#file'], 2);
+
+    $clip['provider'] = 'rtmp';
+    $clip['url'] = 'mp4:' . $parts[1];
+    $plugins['rtmp'] = array(
+      'url' => 'flowplayer.rtmp-3.2.3.swf',
+      'netConnectionUrl' => $parts[0],
+    );
+  }
 
   if ($tracks = _fideo_element_by_type($element, array('captions', 'subtitles', 'track'))) {
     // Find captions or subtitles, and use only the first one. Beware that
@@ -218,6 +272,7 @@ function _fideo_fallback_flashvars($element, $source) {
       'url' => 'flowplayer.captions-3.2.2.swf',
       'captionTarget' => 'content',
     );
+
     $plugins['content'] = array(
       'url' => 'flowplayer.content-3.2.0.swf',
       'bottom' => 5,

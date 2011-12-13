@@ -8,7 +8,7 @@ see an example, check out example.html in the 'example' directory.
 
 2. Install the Drupal module "Fideo" by going to admin/build/modules.
 
-3. Check out the demo page by going to the path 'fideo'.
+3. Check out the demo page by going to the path 'fideo' in your Drupal install.
 
 4. In the fideo.demo.inc is a function called fideo_format() which presents the
    data structure for video files. Take that format and use it in your own

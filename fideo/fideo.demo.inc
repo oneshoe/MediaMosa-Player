@@ -1,4 +1,5 @@
 <?php
+// $Id: fideo.demo.inc 287 2011-12-13 13:03:46Z thijs $
 
 /**
  * @file
@@ -21,30 +22,30 @@ function fideo_format() {
         'height' => 400,
         'controls' => 'controls',
       ),
-      '#poster' => base_path() .'assets/video/mozcamp_still.jpg',
+      '#poster' => 'http://labs.oneshoe.nl/fideo/assets/video/mozcamp_still.jpg',
       array(
         '#type' => 'source',
         '#mimetype' => 'video/mp4',
         '#codecs' => 'avc1.42E01E, mp4a.40.2',
-        '#file' => base_path() .'assets/video/mozcamp.handbrake.mp4?1',
+        '#file' => 'http://labs.oneshoe.nl/fideo/assets/video/mozcamp.handbrake.mp4?1',
       ),
       'webm' => array(
         '#type' => 'source',
         '#mimetype' => 'video/webm',
         '#codecs' => 'vp8, vorbis',
-        '#file' => base_path() .'assets/video/mozcamp.ffmpeg.webm?1',
+        '#file' => 'http://labs.oneshoe.nl/fideo/assets/video/mozcamp.ffmpeg.webm?1',
       ),
       'ogv' => array(
         '#type' => 'source',
         '#mimetype' => 'video/ogg',
         '#codecs' => 'theora, vorbis',
-        '#file' => base_path() .'assets/video/mozcamp.ffmpeg.ogv?1',
+        '#file' => 'http://labs.oneshoe.nl/fideo/assets/video/mozcamp.ffmpeg.ogv?1',
       ),
       array(
         '#type' => 'subtitles',
         '#lang' => 'nl',
         '#title' => t('Dutch'),
-        '#file' => base_path() .'assets/video/mozcamp.captions.srt',
+        '#file' => 'http://labs.oneshoe.nl/fideo/assets/video/mozcamp.captions.srt',
       ),
     ),
     'secondary' => array(
@@ -54,24 +55,24 @@ function fideo_format() {
       '#attributes' => array(
         'width' => 267, 'height' => 200, 'controls' => 'controls',
       ),
-      '#poster' => base_path() .'assets/video/mozcamp_slide.jpg',
+      '#poster' => 'http://labs.oneshoe.nl/fideo/assets/video/mozcamp_slide.jpg',
       array(
         '#type' => 'source',
         '#mimetype' => 'video/mp4',
         '#codecs' => 'avc1.42E01E, mp4a.40.2',
-        '#file' => base_path() .'assets/video/mozcamp.handbrake.mp4?2',
+        '#file' => 'http://labs.oneshoe.nl/fideo/assets/video/mozcamp.handbrake.mp4?2',
       ),
       'webm' => array(
         '#type' => 'source',
         '#mimetype' => 'video/webm',
         '#codecs' => 'vp8, vorbis',
-        '#file' => base_path() .'assets/video/mozcamp.ffmpeg.webm?2',
+        '#file' => 'http://labs.oneshoe.nl/fideo/assets/video/mozcamp.ffmpeg.webm?2',
       ),
       'ogv' => array(
         '#type' => 'source',
         '#mimetype' => 'video/ogg',
         '#codecs' => 'theora, vorbis',
-        '#file' => base_path() .'assets/video/mozcamp.ffmpeg.ogv?2',
+        '#file' => 'http://labs.oneshoe.nl/fideo/assets/video/mozcamp.ffmpeg.ogv?2',
       ),
     ),
     'slides' => array(
@@ -143,7 +144,7 @@ www.mozilla-europe.org',
     $media['slides'][$i] = array(
       '#type' => 'slide',
       '#start' => $timecodes[$i],
-      '#file' => base_path() .'assets/stills/'. str_pad($i, 3, '0', STR_PAD_LEFT) .'.jpg',
+      '#file' => 'http://labs.oneshoe.nl/fideo/assets/stills/'. str_pad($i, 3, '0', STR_PAD_LEFT) . '.jpg',
       '#alt' => $alts[$i],
     );
   }
@@ -177,7 +178,7 @@ www.mozilla-europe.org',
     '#type' => 'marker',
     '#start' => 600.3,
     '#end' => 650.4,
-    '#value' => '<img src="'. base_path() .'assets/stills/firefox_logo.png" width="100" height="100" alt="FireFox" /><br />The FireFox browser.',
+    '#value' => '<img src="http://labs.oneshoe.nl/fideo/assets/stills/firefox_logo.png" width="100" height="100" alt="FireFox" /><br />The FireFox browser.',
   );
 
   // Create a wrapper.

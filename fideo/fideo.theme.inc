@@ -1,4 +1,5 @@
 <?php
+// $Id: fideo.theme.inc 286 2011-12-13 12:55:28Z thijs $
 
 /**
  * @file
@@ -33,6 +34,14 @@ function theme_fideo_track($variables) {
  */
 function theme_fideo_source($variables) {
   $element = $variables['element'];
+
+  // Skip rendering the source element when preprocessors might want to skip
+  // this source because it's not HTTP/HTTPS. But leave the source intact for
+  // Flash fallback use.
+  if (!empty($element['#skip'])) {
+    return '';
+  }
+
   $attributes = array(
     'src' => $element['#file'],
   );
@@ -92,11 +101,14 @@ function theme_fideo_video($variables) {
     $js['multi'] = $element['#multistream'];
   }
 
+  // MediaMosa fails a lot on setting technical metadata like width and height.
+  // To avoid division by zero errors, assume a default width/height ratio.
+  if (empty($attributes['height']) && empty($attributes['width'])) {
+    $attributes['width'] = 480;
+    $attributes['height'] = 320;
+  }
+
   $js['ratio'] = $attributes['height'] / $attributes['width'];
-  //$attributes['width'] = '100%';
-  //$attributes['height'] = '100%';
-  //unset($attributes['width']);
-  //unset($attributes['height']);
 
   drupal_add_js(array('fideo' => array($element['#id'] => $js)), 'setting');
 
@@ -106,13 +118,13 @@ function theme_fideo_video($variables) {
   $element['#attributes'] = $attributes;
 
   foreach (array('autoplay', 'controls', 'preload') as $key) {
-    if (isset($element['#'. $key]) && $element['#'. $key] !== FALSE) {
-      $attributes[$key] = ($element['#'. $key] === TRUE ? $key : $element['#'. $key]);
+    if (isset($element['#' . $key]) && $element['#' . $key] !== FALSE) {
+      $attributes[$key] = ($element['#' . $key] === TRUE ? $key : $element['#' . $key]);
     }
   }
 
-  $output = '<div class="fideo-item" id="fideo-'. check_plain($element['#id']) .'"><div class="video-js-box">' ."\n";
-  $output .= '<video'. drupal_attributes($attributes) .">\n";
+  $output = '<div class="fideo-item" id="fideo-' . check_plain($element['#id']) . '"><div class="video-js-box">' . "\n";
+  $output .= '<video' . drupal_attributes($attributes) . ">\n";
   $output .= $element['#children'];
   if (!empty($element['#flash_fallback'])) {
     $output .= theme('fideo_fallback', array('element' => $element));
@@ -132,7 +144,7 @@ function theme_fideo_slides($variables) {
   static $counter = 0;
   $counter++;
 
-  $element['#attributes']['id'] = (!empty($element['#id']) ? $element['#id'] : 'fideo_slides_'. ($counter));
+  $element['#attributes']['id'] = (!empty($element['#id']) ? $element['#id'] : 'fideo_slides_' . ($counter));
   $element['#id'] = $element['#attributes']['id'];
 
   $js = array('type' => 'slides');
@@ -151,8 +163,8 @@ function theme_fideo_slides($variables) {
   // Add the configuration to javascript.
   drupal_add_js(array('fideo' => array($element['#id'] => $js)), 'setting');
 
-  $element['#attributes']['class'] = (!empty($element['#attributes']['class']) ? $element['#attributes']['class'] .' ' : ''). 'fideo-slides';
-  $output = '<div'. drupal_attributes($element['#attributes']) .'>'. $element['#children'] .'</div>';
+  $element['#attributes']['class'] = (!empty($element['#attributes']['class']) ? $element['#attributes']['class'] . ' ' : '') . 'fideo-slides';
+  $output = '<div' . drupal_attributes($element['#attributes']) . '>' . $element['#children'] . '</div>';
   return $output;
 }
 
@@ -163,8 +175,8 @@ function theme_fideo_slides($variables) {
  */
 function theme_fideo_slide($variables) {
   $element = $variables['element'];
-  $element['#attributes']['class'] = (!empty($element['#attributes']['class']) ? $element['#attributes']['class'] .' ' : ''). 'fideo-slide';
-  $output = '<div'. drupal_attributes($element['#attributes']) .'>';
+  $element['#attributes']['class'] = (!empty($element['#attributes']['class']) ? $element['#attributes']['class'] . ' ' : '') . 'fideo-slide';
+  $output = '<div' . drupal_attributes($element['#attributes']) . '>';
   if (!empty($element['#file'])) {
     $element['#alt'] = isset($element['#alt']) ? $element['#alt'] : '';
     $output .= theme('image', array('path' => $element['#file'], 'alt' => $element['#alt'], 'title' => $element['#alt']));
@@ -205,30 +217,20 @@ function theme_fideo_fallback($variables) {
       'data' => $player_swf,
     );
 
-    $playlist = array();
-    if (!empty($element['#poster'])) {
-      $playlist[] = '"'. check_plain(addslashes($element['#poster'])) .'"';
-    }
-    $item = '{"url": "'. check_plain(addslashes($source['#file'])) .'","autoBuffering":true,"autoPlay":'. ($element['#autoplay'] ? 'true' : 'false');
-    $item .= '}';
-
-    $playlist[] = $item;
-
     // Include the fideo.render.inc file so we are able to use the flashvar
     // helper function.
     module_load_include('inc', 'fideo', 'fideo.render');
 
     $output .= '<object'. drupal_attributes($attributes) .">\n";
-    $output .= '<param name="movie" value="'. check_plain($player_swf) .'" />';
+    $output .= '<param name="movie" value="' . check_plain($player_swf) . '" />';
     $output .= '<param name="allowfullscreen" value="true" />';
-    $output .= '<param name="flashvars" value=\''. (_fideo_fallback_flashvars($element, $source)) .'\' />' ."\n";
+    $output .= '<param name="flashvars" value=\'' . (_fideo_fallback_flashvars($element, $source)) . '\' />' . "\n";
     if (!empty($element['#poster'])) {
-
       $output .= theme('image', array(
         'path' => $element['#poster'],
         'width' => check_plain($attributes['width']),
         'height' => check_plain($attributes['height']),
-        'alt' => t('Unable to play video.')
+        'alt' => t('Unable to play video.'),
       ));
 
     }
@@ -260,7 +262,7 @@ function theme_fideo_markers($variables) {
   drupal_add_js(base_path() . variable_get('fideo_qtip_src', drupal_get_path('module', 'fideo') . FIDEO_DEFAULT_QTIP_SRC));
   drupal_add_js(array('fideo' => $js), 'setting');
 
-  return '<div '. drupal_attributes($element["#attributes"]) .'>'. $element['#children'] .'</div>';
+  return '<div ' . drupal_attributes($element["#attributes"]) . '>' . $element['#children'] . '</div>';
 }
 
 /**
